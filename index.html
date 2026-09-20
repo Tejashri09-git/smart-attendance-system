@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Attendance System</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .container {
+            background: white;
+            max-width: 900px;
+            margin: auto;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        input {
+            padding: 10px;
+            margin: 8px;
+            width: 220px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #999;
+            padding: 10px;
+        }
+
+        th {
+            background: #ddd;
+        }
+
+        #message {
+            margin: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Smart Attendance System</h1>
+
+    <h2>Mark Attendance</h2>
+
+    <input
+        type="text"
+        id="studentId"
+        placeholder="Enter Student ID"
+    >
+
+    <br>
+
+    <input
+        type="text"
+        id="studentName"
+        placeholder="Enter Student Name"
+    >
+
+    <br>
+
+    <button onclick="markAttendance()">
+        Mark Attendance
+    </button>
+
+    <div id="message"></div>
+
+    <hr>
+
+    <h2>Attendance Dashboard</h2>
+
+    <button onclick="loadAttendance()">
+        View Attendance
+    </button>
+
+    <table id="attendanceTable">
+
+        <tr>
+            <th>Student ID</th>
+            <th>Student Name</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Status</th>
+        </tr>
+
+    </table>
+
+</div>
+
+
+<script>
+
+const API_URL =
+"https://x3nqs5yhdh.execute-api.ap-south-1.amazonaws.com/prod/attendance";
+
+
+/* MARK ATTENDANCE */
+
+async function markAttendance() {
+
+    const studentId =
+        document.getElementById("studentId").value;
+
+    const studentName =
+        document.getElementById("studentName").value;
+
+    if (studentId === "" || studentName === "") {
+
+        document.getElementById("message").innerText =
+            "Please enter Student ID and Student Name.";
+
+        return;
+    }
+
+    try {
+
+        const response = await fetch(API_URL, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+
+                studentId: studentId,
+                studentName: studentName
+
+            })
+
+        });
+
+        const data = await response.json();
+
+        document.getElementById("message").innerText =
+            data.message;
+
+        document.getElementById("studentId").value = "";
+        document.getElementById("studentName").value = "";
+
+    }
+
+    catch (error) {
+
+        document.getElementById("message").innerText =
+            "Error connecting to server.";
+
+        console.error(error);
+
+    }
+
+}
+
+
+/* LOAD ATTENDANCE DASHBOARD */
+
+async function loadAttendance() {
+
+    try {
+
+        const response = await fetch(API_URL);
+
+        const data = await response.json();
+
+        const table =
+            document.getElementById("attendanceTable");
+
+        /* Remove old rows except heading */
+
+        while (table.rows.length > 1) {
+            table.deleteRow(1);
+        }
+
+        data.forEach(record => {
+
+            const row = table.insertRow();
+
+            row.insertCell(0).innerText =
+                record.studenID;
+
+            row.insertCell(1).innerText =
+                record.studentName;
+
+            row.insertCell(2).innerText =
+                record.attendanceDate;
+
+            row.insertCell(3).innerText =
+                record.attendanceTime;
+
+            row.insertCell(4).innerText =
+                record.status;
+
+        });
+
+    }
+
+    catch (error) {
+
+        alert("Error loading attendance.");
+
+        console.error(error);
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
